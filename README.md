@@ -128,8 +128,3 @@ After running the experiments, you can generate the plots using the provided R s
 - **Normalized Distances**: `plot_norm_dist.r`
 - **Routing Times**: `plot_routing_time.r`
 
-These plots are used in the paper to demonstrate the performance and scalability of the exact and heuristic models.
-
----
-
-Feel free to modify this `README.md` as needed to suit your specific project and workflow.
