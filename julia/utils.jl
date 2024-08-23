@@ -1,6 +1,13 @@
 using CSV
 using DataFrames
 
+
+# Function to save boxplot data to CSV
+function save_boxplot_data(filename, groups, labels, data)
+    df = DataFrame(Group = groups, Label = labels, Data = data)
+    CSV.write(filename, df)
+end
+
 # Function to write drones to a file for C++ heuristic
 function write_drones_to_file(drones, filename, grid_rows, grid_columns)
     open(filename, "w") do io
@@ -29,7 +36,8 @@ function read_cpp_results(filename)
 end
 
 
-# Function to plot boxplots
+
+# Function to plot boxplots and save data to CSV
 function plot_individual_boxplots(num_drones_list, julia_times, julia_obj_values, cpp_times, cpp_obj_values)
     # Prepare the data for boxplots
     julia_time_data = []
@@ -66,17 +74,25 @@ function plot_individual_boxplots(num_drones_list, julia_times, julia_obj_values
         append!(cpp_obj_groups, fill(n, length(cpp_obj_values[n])))
     end
 
+    # Save the data to CSV files
+    save_boxplot_data("julia_time_data.csv", julia_time_groups, julia_time_labels, julia_time_data)
+    save_boxplot_data("julia_obj_data.csv", julia_obj_groups, julia_obj_labels, julia_obj_data)
+    save_boxplot_data("cpp_time_data.csv", cpp_time_groups, cpp_time_labels, cpp_time_data)
+    save_boxplot_data("cpp_obj_data.csv", cpp_obj_groups, cpp_obj_labels, cpp_obj_data)
+
     # Convert groups to strings with leading zeros for proper labeling
     julia_time_groups_str = [ @sprintf("%02i", x) for x in julia_time_groups ]
     julia_obj_groups_str = [ @sprintf("%02i", x) for x in julia_obj_groups ]
     cpp_time_groups_str = [ @sprintf("%02i", x) for x in cpp_time_groups ]
     cpp_obj_groups_str = [ @sprintf("%02i", x) for x in cpp_obj_groups ]
 
+    font = "Times"
+
     # Plot boxplot for Julia model running time
     p1 = boxplot(julia_time_groups_str, julia_time_data, group=julia_time_labels,
                  xlabel="Number of Drones", ylabel="Time (s)",
                  title="Exact Model: Running Time vs Number of Drones", fillalpha=0.75, linewidth=1, legend=false,
-                 color=:blue)
+                 color=:blue, guidefont=font, tickfont=font, titlefont=font)
     display(p1)
     savefig(p1, "julia_time_boxplot_vs_drones.png")
 
@@ -84,7 +100,7 @@ function plot_individual_boxplots(num_drones_list, julia_times, julia_obj_values
     p2 = boxplot(julia_obj_groups_str, julia_obj_data, group=julia_obj_labels,
                  xlabel="Number of Drones", ylabel="Objective Value",
                  title="Exact Model: Objective Value vs Number of Drones", fillalpha=0.75, linewidth=1, legend=false,
-                 color=:blue)
+                 color=:blue, guidefont=font, tickfont=font, titlefont=font)
     display(p2)
     savefig(p2, "julia_obj_boxplot_vs_drones.png")
 
@@ -92,7 +108,7 @@ function plot_individual_boxplots(num_drones_list, julia_times, julia_obj_values
     p3 = boxplot(cpp_time_groups_str, cpp_time_data, group=cpp_time_labels,
                  xlabel="Number of Drones", ylabel="Time (s)",
                  title="Heuristic: Running Time vs Number of Drones", fillalpha=0.75, linewidth=1, legend=false,
-                 color=:red)
+                 color=:red, guidefont=font, tickfont=font, titlefont=font)
     display(p3)
     savefig(p3, "cpp_time_boxplot_vs_drones.png")
 
@@ -100,10 +116,11 @@ function plot_individual_boxplots(num_drones_list, julia_times, julia_obj_values
     p4 = boxplot(cpp_obj_groups_str, cpp_obj_data, group=cpp_obj_labels,
                  xlabel="Number of Drones", ylabel="Objective Value",
                  title="Heuristic: Objective Value vs Number of Drones", fillalpha=0.75, linewidth=1, legend=false,
-                 color=:red)
+                 color=:red, guidefont=font, tickfont=font, titlefont=font)
     display(p4)
     savefig(p4, "cpp_obj_boxplot_vs_drones.png")
 end
+
 
 
 
@@ -118,7 +135,9 @@ end
 
 # Function to run the C++ heuristic
 function run_cpp_heuristic(input_file, output_file)
-    run(`../heuristic_cpp/drone_simulation $input_file $output_file`)
+    experiment_type = "norm_dist_exp"
+
+    run(`../heuristic_cpp/drone_simulation $input_file $output_file $(experiment_type)`)
 end
 
 # Function to read a single result from the C++ heuristic output
@@ -193,40 +212,6 @@ function plot_routing_times(num_drones_list, routing_times)
 
     display(p)
     savefig(p, "cpp_routing_time_boxplot_vs_drones.pdf")
-end
-
-# Main function to run the experiments
-function run_experiments_heuristic(grid_rows, grid_columns, max_drones, num_trials; stepx=1)
-    num_drones_list = Int[]
-    normalized_distances = Dict{Int, Vector{Float64}}()
-    routing_times = Dict{Int, Vector{Float64}}()
-    output_file = "output_normalized_drones.txt"
-
-    # Ensure the output file is empty before starting
-    open(output_file, "w") do io
-        write(io, "")
-    end
-
-    for num_drones in 1:stepx:max_drones
-        for trial in 1:num_trials
-            input_file = generate_drones_input(num_drones, grid_rows, grid_columns)
-            run_cpp_heuristic(input_file, output_file)
-            
-            nd, normalized_distance, routing_time = read_single_cpp_result(output_file)
-            
-            if !haskey(normalized_distances, nd)
-                normalized_distances[nd] = Float64[]
-                routing_times[nd] = Float64[]
-                push!(num_drones_list, nd)
-            end
-            push!(normalized_distances[nd], normalized_distance)
-            push!(routing_times[nd], routing_time)            
-        end
-    end
-
-    num_drones_list = sort(num_drones_list)
-    #plot_normalized_distances(num_drones_list, normalized_distances)
-    #plot_routing_times(num_drones_list, routing_times)
 end
 
 

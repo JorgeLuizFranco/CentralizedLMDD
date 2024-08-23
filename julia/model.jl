@@ -2,7 +2,7 @@ module DroneModel
 
 using JuMP, Random, Gurobi
 
-ENV["GRB_LICENSE_FILE"] = "/home/jorgerix//gurobi.lic"
+ENV["GRB_LICENSE_FILE"] = "/home/jorgerix/Documentos/gurobi//gurobi.lic"
 
 # Function to set up and solve the MILP model
 function solve_model(grid_rows, grid_columns, T, drones)
