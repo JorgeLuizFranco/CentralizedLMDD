@@ -1,6 +1,6 @@
 # Centralized Last-Mile Delivery Drones (CentralizedLMDD)
 
-This repository contains the implementation and experiments for the **Centralized Last-Mile Delivery Drones** project. The heuristic was build in C++, while the exact model was build in Julia+Gurobi. The experiments compare the performance of an exact MILP-based model with a heuristic model for drone pathfinding and scheduling. The results in our paper **A graph-based airspace control for last-mile delivery drones" are presented in four plots, which are generated using Julia and R scripts provided in this repository.
+This repository contains the implementation and experiments for the **Centralized Last-Mile Delivery Drones** project. The heuristic was build in C++, while the exact model was build in Julia+Gurobi. The experiments compare the performance of an exact MILP-based model with a heuristic model for drone pathfinding and scheduling. The results in our paper *A graph-based airspace control for last-mile delivery drones* are presented in four plots, which are generated using Julia and R scripts provided in this repository.
 
 ## Directory Structure
 
